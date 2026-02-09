@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PiLog Knowledge Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+
+        <div class="sidebar-top-row toggle-group">
+
+          <!-- BRAND -->
+          <div class="sidebar-brand">
+            <img
+              src="https://www.piloggroup.com/img/header/logo-header.png"
+              alt="PiLog"
+              class="sidebar-logo"
+            />
+            <div class="sidebar-brand-text">
+              <div class="sidebar-title-sub">Knowledge Assistant</div>
+              <div class="header-subtitle">Chat · Internal Preview</div>
+            </div>
+          </div>
+
+          <!-- COLLAPSE (visible only when expanded) -->
+          <button
+            id="toggleCollapse"
+            class="sidebar-toggle collapse-btn"
+            aria-label="Collapse sidebar"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path d="M15 18l-6-6 6-6"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+
+          <!-- EXPAND (hover only, collapsed state) -->
+          <button
+            id="toggleExpand"
+            class="sidebar-toggle expand-btn"
+            aria-label="Expand sidebar"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path d="M9 6l6 6-6 6"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+
+        </div>
+
+        <!-- NEW CHAT stays same -->
+        <button class="sidebar-icon-btn new-chat" onclick="startNewChat()">
+          <span class="icon">📝</span>
+          <span class="label">New Chat</span>
+        </button>
+
+      </div>
+      <!-- CONTENT -->
+      <div class="sidebar-content">
+        <div class="sidebar-title">Chat History</div>
+    
+        <ul id="chatList" class="chat-list">
+          <!-- JS will inject -->
+          <!-- Example:
+          <li>
+            <span class="icon">💬</span>
+            <span class="label">New Chat</span>
+          </li>
+          -->
+        </ul>
+      </div>
+    </aside>
+    <main class="main-content">
+      <div class="chat-container">
+        <section class="chat-panel">
+          <div id="messages-scroll-area" class="messages-container">
+            <div id="messages" class="messages">
+              <div id="empty-state" class="empty-state">
+                <h2>Welcome 👋</h2>
+                <p>Ask anything about PiLog products, services or documentation.</p>
+                <div class="empty-example">
+                  Example: <strong style="margin-left:4px;">What is DQGS?</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="input-wrapper">
+      <div class="input-row">
+        <textarea id="input" placeholder="Type your question..." style="height: 38px;"></textarea>
+
+        <button id="send-btn" class="send-btn" aria-label="Send">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <div id="error" class="error" style="display:none;"></div>
+    </div>
+    
+    <div id="feedback-modal" class="modal-overlay">
+      <div class="modal-content">
+        <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+        <div class="modal-title">Help us improve!</div>
+
+        <div id="modal-form">
+          <div class="modal-question">How would you rate the usefulness of this response?</div>
+
+          <div class="rating-value" id="rating-display">50%</div>
+
+          <div class="rating-slider-container">
+            <input type="range" id="rating-slider" min="0" max="100" value="50">
+          </div>
+            <div class="feedback-reason-container">
+              <label for="feedback-reason">Reason (optional)</label>
+              <select id="feedback-reason" class="feedback-reason-select">
+                <option value="">Select a reason (optional)</option>
+                <option value="Answer is incorrect">Answer is incorrect</option>
+                <option value="Answer is incomplete">Answer is incomplete</option>
+                <option value="Not relevant">Not relevant</option>
+                <option value="Took too long to respond">Took too long to respondt</option>
+                <option value="Too generic">Too generic</option>
+                <option value="Other">Other</option>
+              </select>
+              <textarea id="feedback-reason-text" class="feedback-reason-text"
+                placeholder="Please specify your reason..."></textarea>
+            </div>
+
+          <button id="modal-submit-btn" class="submit-btn">Submit Feedback</button>
+        </div>
+          
+        <div id="modal-thanks" style="text-align:center; display:none;">
+            <h3 style="color:var(--accent); margin-bottom:15px;">Thank you for your valuable feedback!</h3>
+            <p>This modal will close automatically in a moment.</p>
+        </div>
+      </div>
+    </div>
+  <script src="/static/script.js"></script>
+</body>
+</html>

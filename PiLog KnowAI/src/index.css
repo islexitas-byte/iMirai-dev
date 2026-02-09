@@ -1,0 +1,280 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+@keyframes dotPulse {
+  0% { opacity: 0.2; }
+  20% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+.thinking-dots span {
+  animation: dotPulse 1.4s infinite both;
+}
+
+.thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-slate-300 {
+  scrollbar-color: #cbd5e1 transparent;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* SQL Developer style tweaks */
+.ag-theme-alpine {
+  --ag-header-background-color: #7374757e;   /* light grey header */
+  --ag-header-foreground-color: #111827;
+  --ag-border-color: #e5e7eb;
+
+  --ag-row-background-color: #ffffff;     /* white rows */
+  --ag-odd-row-background-color: #ffffff;
+
+  --ag-row-hover-color: #f8fafc;
+  --ag-selected-row-background-color: #e5e7eb;
+
+  font-size: 13px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ============================
+   SQL DEVELOPER GRID LINES
+   ============================ */
+.ag-theme-alpine .ag-header-cell-label {
+  justify-content: flex-start;
+  text-align: left;
+}
+/* Vertical column separators */
+.ag-theme-alpine .ag-cell {
+  border-right: 1px solid #d1d5db;
+  text-align: left;
+  justify-content: flex-start;   /* light grey line */
+}
+
+/* Horizontal row separators */
+.ag-theme-alpine .ag-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ag-theme-alpine .ag-header {
+  background-color: #f1f3f5ca;              /* light grey header */
+  border-bottom: 2px solid #9ca3af;       /* strong divider line */
+  justify-content: flex-start;
+  text-align: left;
+}
+.ag-theme-alpine .ag-header-cell {
+  border-right: 1px solid #cbd5f5;        /* vertical header separators */
+}
+.ag-theme-alpine .ag-header-cell .ag-header-icon {
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Show icons only on hover */
+.ag-theme-alpine .ag-header-cell:hover .ag-header-icon {
+  opacity: 1;
+}
+/* ===== FILTER POPUP FIX ===== */
+
+/* Make filter input row taller */
+.ag-theme-alpine .ag-filter-body {
+  padding-top: 8px;
+}
+
+/* Space between search icon and text */
+.ag-theme-alpine .ag-filter input {
+  padding-left: 28px !important;
+}
+
+/* Move search icon properly */
+.ag-theme-alpine .ag-filter .ag-icon-search {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.ag-theme-alpine .ag-icon-filter {
+  color: #374151;
+}
+.ag-theme-alpine .ag-icon-filter {
+  background: none;
+  mask: url("/public/funnel-fill.svg") no-repeat center;
+  -webkit-mask: url("/public/funnel-fill.svg") no-repeat center;
+  background-color: #374151;
+  width: 14px;
+  height: 14px;
+}
+
+/* SQL Developer style filter bar */
+.sql-filter-bar {
+  background: #f1f3f5;
+  border-bottom: 1px solid #9ca3af;
+}
+
+.sql-filter-bar input {
+  height: 26px;
+  font-size: 13px;
+}
+/* =========================
+   SQL DEVELOPER TOOLBAR
+   ========================= */
+
+/* =========================
+   ENTERPRISE ICON BUTTONS
+   ========================= */
+
+.toolbar-btn {
+  padding: 4px;
+  background: transparent;   /* ❌ no white box */
+  border: none;              /* ❌ no border */
+  cursor: pointer;
+  color: #374151;            /* slate-700 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-btn:hover {
+  color: #111827;            /* darker on hover */
+}
+
+.toolbar-btn:focus {
+  outline: none;
+}
+
+
+/* =========================
+   FILTER INPUT
+   ========================= */
+
+.sql-filter-input {
+  width: 100%;
+  height: 30px;                /* ⬅️ bigger like SQL Dev */
+  padding: 4px 30px 4px 8px;   /* space for arrow */
+  border: 1px solid #9ca3af;
+  border-radius: 2px;
+  font-size: 13px;
+  background: #ffffff;
+}
+
+/* dropdown arrow inside input */
+.sql-filter-arrow {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 6px;
+  border-left: 1px solid #9ca3af;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sql-filter-arrow:hover {
+  background: #d1d5db;
+}
+
+/* =========================
+   COLUMN DROPDOWN
+   ========================= */
+
+.sql-filter-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 2px;
+  width: 220px;
+  background: #ffffff;
+  border: 1px solid #9ca3af;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.sql-filter-item {
+  padding: 6px 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sql-filter-item:hover {
+  background: #f1f5f9;
+}
+
+/* =========================
+   ENTERPRISE TEXT LOADER
+   ========================= */
+
+.enterprise-bar {
+  width: 240px;
+  height: 3px;
+  background: #e5e7eb;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.enterprise-bar-fill {
+  width: 40%;
+  height: 100%;
+  background: #2563eb;
+  animation: slide 1.2s ease-in-out infinite;
+}
+
+@keyframes slide {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(150%); }
+  100% { transform: translateX(150%); }
+}
+
+.enterprise-loader-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+/* =========================
+   FORCE LEFT ALIGNMENT (REAL FIX)
+   ========================= */
+
+/* Header text */
+.ag-theme-alpine .ag-header-cell-label {
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+/* Cell content wrapper */
+.ag-theme-alpine .ag-cell-wrapper {
+  justify-content: flex-start !important;
+}
+
+/* Actual cell value */
+.ag-theme-alpine .ag-cell-value {
+  text-align: left !important;
+}
+.grid-loading .ag-overlay-no-rows-center {
+  display: none !important;
+}

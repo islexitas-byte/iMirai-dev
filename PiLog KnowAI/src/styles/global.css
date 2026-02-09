@@ -1,0 +1,223 @@
+/* =========================
+   ROOT SCOPE FOR BACKEND HTML
+   ========================= */
+
+.pilog-html {
+  padding: 0;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #334155; /* slate-700 */
+  max-width: 100%;
+  overflow-x: auto;
+
+  /* Subtle rendering polish */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* =========================
+   ANSWER HEADER
+   ========================= */
+
+.pilog-html .pilog-answer-header {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+}
+
+.pilog-html .pilog-answer-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+  color: var(--text-dark, #0f172a); /* slate-900 */
+  letter-spacing: -0.01em;
+}
+
+.pilog-html .pilog-answer-summary {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: #475569; /* slate-600 */
+}
+
+/* =========================
+   SECTIONS
+   ========================= */
+
+.pilog-html .pilog-answer-section {
+  margin-top: 18px;
+}
+
+.pilog-html .pilog-section-heading {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-dark, #0f172a);
+  letter-spacing: 0.01em;
+}
+
+/* =========================
+   LISTS (ENTERPRISE FIX)
+   ========================= */
+
+.pilog-html .pilog-list {
+  margin: 6px 0 0;
+  padding-left: 1.4rem;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.pilog-html .pilog-list li {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #334155; /* slate-700 */
+}
+
+.pilog-html .pilog-answer-takeaway {
+  margin-top: 12px;
+  padding-left: 10px;
+  border-left: 3px solid #2563eb; /* blue-600 */
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #1e293b; /* slate-800 */
+}
+
+.pilog-html .pilog-answer-subtitle {
+  margin: 0 0 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #1e293b; /* slate-800 */
+}
+
+.pilog-html .pilog-answer-lead {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 500;
+  color: #0f172a; /* slate-900 */
+}
+
+
+
+/* =========================
+   TABLES
+   ========================= */
+
+.pilog-html table {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.pilog-html .pilog-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.88rem;
+  margin-top: 10px;
+  border: 1px solid #e2e8f0; /* slate-200 */
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Header */
+.pilog-html .pilog-table th {
+  background: #f8fafc; /* slate-50 */
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  color: #0f172a; /* slate-900 */
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Cells */
+.pilog-html .pilog-table td {
+  padding: 10px 12px;
+  color: #334155; /* slate-700 */
+  vertical-align: top;
+  border-bottom: 1px solid #f1f5f9; /* slate-100 */
+}
+
+/* Remove last row border */
+.pilog-html .pilog-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Zebra subtle */
+.pilog-html .pilog-table tbody tr:nth-child(even) {
+  background: #fcfdff;
+}
+
+
+.pilog-html .file-download-card {
+  margin-top: 14px;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb; /* gray-200 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  max-width: 100%;
+}
+
+/* Left section: icon + filename */
+.pilog-html .file-info-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* File type icon */
+.pilog-html .file-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* File name */
+.pilog-html .file-name-pill {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark, #1f2937);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* =========================
+   DOWNLOAD BUTTON
+   ========================= */
+
+.pilog-html .download-round-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background-color 0.2s, transform 0.1s;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.pilog-html .download-round-btn:hover {
+  filter: brightness(0.9);
+  transform: translateY(-1px);
+}

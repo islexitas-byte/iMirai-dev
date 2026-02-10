@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import { v4 as uuidv4 } from "uuid";
 import Sidebar from "./components/Sidebar";
 import ChatLayout from "./components/ChatLayout";
-import LoginPage from "./pages/LoginPage";
-import LandingPage from "./pages/LandingPage";
-import TasksPage from "./pages/TasksPage";
-import UsersPage from "./pages/UsersPage";
-import KnowledgeSources from "./pages/KnowledgeSources";
 import type { Task } from "./types/task";
 import { API_CONFIG } from "./config/api";
+import TasksPage from "./pages/TasksPage";
+import LoginPage from "./pages/LoginPage";
+import LandingPage from "./pages/LandingPage";
+import { Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
+import UsersPage from "./pages/UsersPage";
 import type { LoginUser } from "./pages/LoginPage";
 import { fetchChatSessions } from "./api/chatHistory";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import KnowledgeSources from "./pages/KnowledgeSources";
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { getUserUsage } from "./api/chat";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -27,45 +29,47 @@ export type UserUsage = {
   limit: number;
 };
 
-// ✅ MAIN APP WRAPPER (handles auth state)
 export default function App() {
   const [user, setUser] = useState<LoginUser | null>(() => {
     const saved = localStorage.getItem("pilog_user");
     return saved ? JSON.parse(saved) : null;
   });
 
-  const handleLogin = (u: LoginUser) => {
-    localStorage.setItem("pilog_user", JSON.stringify(u));
-    setUser(u);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("pilog_user");
-    setUser(null);
-  };
+  /* ---- LOGIN ---- */
+  if (!user) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={
+            <LoginPage onSuccess={(u) => {
+              localStorage.setItem("pilog_user", JSON.stringify(u));
+              setUser(u);
+            }} />
+          } />
+          <Route path="/signup" element={
+            <LoginPage onSuccess={(u) => {
+              localStorage.setItem("pilog_user", JSON.stringify(u));
+              setUser(u);
+            }} />
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
 
   return (
     <BrowserRouter>
-      <Routes>
-        {/* ✅ PUBLIC ROUTES */}
-        <Route path="/login" element={
-          user ? <Navigate to="/new" replace /> : <LoginPage onSuccess={handleLogin} />
-        } />
-        
-        <Route path="/signup" element={
-          user ? <Navigate to="/new" replace /> : <LoginPage onSuccess={handleLogin} />
-        } />
-
-        {/* ✅ PROTECTED ROUTES */}
-        <Route path="/*" element={
-          user ? <AuthenticatedApp user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />
-        } />
-      </Routes>
+      <AuthenticatedApp user={user} onLogout={() => {
+        localStorage.removeItem("pilog_user");
+        setUser(null);
+      }} />
     </BrowserRouter>
   );
 }
 
-// ✅ AUTHENTICATED APP (with sidebar + routes)
+// ✅ AUTHENTICATED APP
 function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () => void }) {
   const [collapsed, setCollapsed] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -73,7 +77,7 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
   const [usage, setUsage] = useState<UserUsage | null>(null);
   const [usageLoading, setUsageLoading] = useState(false);
 
-  // ✅ LOAD USER CREDITS
+  /* ===== LOAD USER USAGE (CREDITS) ===== */
   useEffect(() => {
     setUsageLoading(true);
     getUserUsage(user.username)
@@ -88,15 +92,31 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
         console.error("Failed to fetch user credits", err);
         setUsage(null);
       })
-      .finally(() => setUsageLoading(false));
+      .finally(() => {
+        setUsageLoading(false);
+      });
   }, [user]);
 
-  // ✅ LOAD TASK COUNT
+  /* ===== RENAME SESSION (FROM SIDEBAR) ===== */
+  const handleRenameSession = (sessionId: string, title: string) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.sessionId === sessionId ? { ...s, title } : s))
+    );
+  };
+
+  /* ===== DELETE SESSION (FROM SIDEBAR) ===== */
+  const handleDeleteSession = (sessionId: string) => {
+    setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
+  };
+
+  /* ===== LOAD TASK COUNT ===== */
   useEffect(() => {
     const fetchTasksCount = async () => {
       try {
         const res = await fetch(
-          `${API_CONFIG.BACKEND_BASE_URL}/tasks-list?username=${encodeURIComponent(user.username)}`
+          `${API_CONFIG.BACKEND_BASE_URL}/tasks-list?username=${encodeURIComponent(
+            user.username
+          )}`
         );
         if (!res.ok) return;
         const tasks: Task[] = await res.json();
@@ -112,7 +132,7 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
     return () => clearInterval(interval);
   }, [user]);
 
-  // ✅ LOAD CHAT SESSIONS
+  /* ---- LOAD EXISTING SESSIONS ---- */
   useEffect(() => {
     fetchChatSessions(user.username)
       .then((res) => {
@@ -125,25 +145,13 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
       .catch(console.error);
   }, [user]);
 
-  // ✅ ADD SESSION TO SIDEBAR (called after first message)
+  /* ---- ADD SESSION ONLY AFTER FIRST ANSWER ---- */
   const addSessionIfMissing = (sessionId: string, title: string) => {
     setSessions((prev) => {
       const exists = prev.some((s) => s.sessionId === sessionId);
       if (exists) return prev;
       return [{ sessionId, title }, ...prev];
     });
-  };
-
-  // ✅ RENAME SESSION
-  const handleRenameSession = (sessionId: string, title: string) => {
-    setSessions((prev) =>
-      prev.map((s) => (s.sessionId === sessionId ? { ...s, title } : s))
-    );
-  };
-
-  // ✅ DELETE SESSION
-  const handleDeleteSession = (sessionId: string) => {
-    setSessions((prev) => prev.filter((s) => s.sessionId !== sessionId));
   };
 
   return (
@@ -153,9 +161,9 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
         setCollapsed={setCollapsed}
         user={user}
         sessions={sessions}
-        activeSessionId={null} // Will be managed by routes
-        onSelectSession={() => {}} // Navigation handled by Link in Sidebar
-        onNewChat={() => {}} // Navigation handled by Link in Sidebar
+        activeSessionId={null}
+        onSelectSession={() => {}}
+        onNewChat={() => {}}
         onLogout={onLogout}
         onRenameSession={handleRenameSession}
         onDeleteSession={handleDeleteSession}
@@ -166,47 +174,48 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
 
       <main className={`flex-1 transition-all duration-300 ${collapsed ? "ml-20" : "ml-64"}`}>
         <Routes>
-          {/* ✅ LANDING/HOME - Shows welcome or redirects to new chat */}
-          <Route path="/" element={<LandingPage />} />
+          {/* ✅ ROOT - Redirect logged in users to /new */}
+          <Route path="/" element={<Navigate to="/new" replace />} />
 
-          {/* ✅ NEW CHAT */}
+          {/* ✅ CHAT ROUTES - Use single wrapper for both new and existing */}
           <Route path="/new" element={
-            <ChatLayoutWrapper
+            <ChatWrapper
               user={user}
-              isNew={true}
               onFirstAnswer={addSessionIfMissing}
               usage={usage}
               setUsage={setUsage}
             />
           } />
 
-          {/* ✅ EXISTING CHAT */}
           <Route path="/c/:sessionId" element={
-            <ChatLayoutWrapper
+            <ChatWrapper
               user={user}
-              isNew={false}
               onFirstAnswer={addSessionIfMissing}
               usage={usage}
               setUsage={setUsage}
             />
           } />
 
-          {/* ✅ TASKS */}
-          <Route path="/tasks" element={<TasksPage user={user} />} />
-
-          {/* ✅ KNOWLEDGE SOURCES (Authorized Only) */}
+          {/* ✅ KNOWLEDGE SOURCES PAGE */}
           <Route path="/knowledge-sources" element={
-            user.CONTENT_AUTHORIZATION === "Y" 
-              ? <KnowledgeSources currentUser={user} />
-              : <Navigate to="/" replace />
+            user.CONTENT_AUTHORIZATION === "Y" ? (
+              <KnowledgeSources currentUser={user} />
+            ) : (
+              <Navigate to="/new" replace />
+            )
           } />
 
-          {/* ✅ USERS (Admin Only) */}
+          {/* ✅ USERS PAGE */}
           <Route path="/users" element={
-            user.role?.toLowerCase() === "admin"
-              ? <UsersPage currentUser={user} />
-              : <Navigate to="/" replace />
+            user.role?.toLowerCase() === "admin" ? (
+              <UsersPage currentUser={user} />
+            ) : (
+              <Navigate to="/new" replace />
+            )
           } />
+
+          {/* ✅ TASKS PAGE */}
+          <Route path="/tasks" element={<TasksPage user={user} />} />
 
           {/* ✅ CATCH ALL */}
           <Route path="*" element={<Navigate to="/new" replace />} />
@@ -216,41 +225,44 @@ function AuthenticatedApp({ user, onLogout }: { user: LoginUser; onLogout: () =>
   );
 }
 
-// ✅ WRAPPER TO HANDLE URL PARAMS + NEW CHAT LOGIC
-function ChatLayoutWrapper({
+// ✅ UNIFIED CHAT WRAPPER - Handles both /new and /c/:sessionId
+function ChatWrapper({
   user,
-  isNew,
   onFirstAnswer,
   usage,
   setUsage,
 }: {
   user: LoginUser;
-  isNew: boolean;
   onFirstAnswer: (sessionId: string, title: string) => void;
   usage: UserUsage | null;
   setUsage: (u: UserUsage) => void;
 }) {
-  const { sessionId: urlSessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { sessionId: urlSessionId } = useParams<{ sessionId: string }>();
+  
+  // ✅ Determine if this is a new chat or existing
+  const isNewChat = location.pathname === "/new";
+  
+  // ✅ Generate temp session ID for new chats, use URL param for existing
+  const [tempSessionId] = useState(() => uuidv4());
+  const sessionId = isNewChat ? tempSessionId : (urlSessionId || tempSessionId);
 
-  // ✅ For /new route, generate a temporary ID
-  const [tempSessionId] = useState(() => isNew ? `temp-${Date.now()}` : null);
-  const sessionId = isNew ? tempSessionId! : urlSessionId!;
-
-  // ✅ Callback after first message on /new
   const handleFirstAnswer = (actualSessionId: string, title: string) => {
-    if (isNew) {
-      // ✅ Update URL from /new to /c/{sessionId}
+    onFirstAnswer(actualSessionId, title);
+    
+    // ✅ Only navigate if we're on /new
+    if (isNewChat) {
       navigate(`/c/${actualSessionId}`, { replace: true });
     }
-    onFirstAnswer(actualSessionId, title);
   };
 
   return (
     <ChatLayout
       user={user}
       sessionId={sessionId}
-      isNewChat={isNew}
+      isNewChat={isNewChat}
+      onExitNewChat={() => {}}
       onFirstAnswer={handleFirstAnswer}
       usage={usage}
       setUsage={setUsage}

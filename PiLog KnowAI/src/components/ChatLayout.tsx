@@ -3,6 +3,7 @@ import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import { askQuestion } from "../api/chat";
 import { fetchChatSession, fetchSessionTitle } from "../api/chatHistory";
+import type { AskResponse } from "../api/chat";
 import type { Message } from "../types/chat";
 import type { LoginUser } from "../pages/LoginPage";
 
@@ -16,6 +17,7 @@ export default function ChatLayout({
   user,
   sessionId,
   isNewChat,
+  onExitNewChat,
   onFirstAnswer,
   usage,
   setUsage,
@@ -23,23 +25,27 @@ export default function ChatLayout({
   user: LoginUser;
   sessionId: string;
   isNewChat: boolean;
+  onExitNewChat: () => void;
   onFirstAnswer: (actualSessionId: string, title: string) => void;
   usage: UserUsage | null;
   setUsage: (u: UserUsage) => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(!isNewChat); // Don't show loading for new chats
+  const titleFetchedRef = useRef(false);
+  const [loading, setLoading] = useState(!isNewChat);
   const [isWaiting, setIsWaiting] = useState(false);
   const activeSessionRef = useRef(sessionId);
-  const actualSessionIdRef = useRef<string | null>(null); // ✅ Track real session ID
-  const titleFetchedRef = useRef(false);
-
+  const actualSessionIdRef = useRef<string | null>(null); // ✅ Track backend session ID
   const getTimestamp = () => new Date().toISOString();
 
-  // ✅ TABLE DETECTION
+  const handleSuggestedClick = async (text: string, files: File[] = []) => {
+    await sendMessage(text, files);
+  };
+
+  /* ===== TABLE DETECTION ===== */
   const hasTable = (html: string) => /<table[\s\S]*?>/i.test(html);
 
-  // ✅ GLOBAL COPY HANDLER
+  /* ===== GLOBAL COPY HANDLER ===== */
   useEffect(() => {
     (window as any).__copyTable = (btn: HTMLElement) => {
       const wrapper = btn.closest(".llm-table-wrapper") as HTMLElement;
@@ -66,7 +72,7 @@ export default function ChatLayout({
     };
   }, []);
 
-  // ✅ WRAP ASSISTANT HTML IF TABLE EXISTS
+  /* ===== WRAP ASSISTANT HTML IF TABLE EXISTS ===== */
   const wrapAssistantHtml = (html: string) => {
     if (!hasTable(html)) return html;
 
@@ -92,6 +98,7 @@ export default function ChatLayout({
                       a2 2 0 0 1 2 2v1"></path>
             </svg>
           </button>
+
           ${tableHtml}
         </div>
       `
@@ -129,16 +136,22 @@ export default function ChatLayout({
     activeSessionRef.current = sessionId;
   }, [sessionId]);
 
-  // ✅ LOAD HISTORY (skip for new chats with temp ID)
+  /* ===== LOAD HISTORY ===== */
   useEffect(() => {
-    if (isNewChat || sessionId.startsWith("temp-")) {
+    // ✅ Skip for new chats
+    if (isNewChat) {
       setMessages([]);
       setLoading(false);
       titleFetchedRef.current = false;
       return;
     }
 
-    setMessages([]);
+    // ✅ DON'T reload if we already have messages (prevents clearing on URL change)
+    if (messages.length > 0) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     titleFetchedRef.current = false;
 
@@ -155,15 +168,18 @@ export default function ChatLayout({
       });
   }, [sessionId, isNewChat]);
 
-  // ✅ SEND MESSAGE
+  /* ===== SEND MESSAGE ===== */
   const sendMessage = async (text: string, files: File[] = []) => {
     if (isWaiting) return;
     setIsWaiting(true);
 
-    // ✅ Add user message + thinking state
+    if (isNewChat) {
+      onExitNewChat();
+    }
+
     setMessages((prev) => [
       ...prev,
-      { role: "user", html: `<div>${text}</div>`, files },
+      { role: "user", html: `<div>${text}</div>`, files: files },
       {
         role: "assistant",
         html: `
@@ -176,7 +192,7 @@ export default function ChatLayout({
     ]);
 
     try {
-      // ✅ Use actual session ID if available, otherwise use temp ID
+      // ✅ Use actual session ID if we have it, otherwise use temp ID
       const sessionToSend = actualSessionIdRef.current || sessionId;
 
       const res = await askQuestion({
@@ -196,11 +212,11 @@ export default function ChatLayout({
         });
       }
 
-      // ✅ CAPTURE ACTUAL SESSION ID FROM BACKEND
+      // ✅ CAPTURE BACKEND SESSION ID (first time only)
       if (res.sessionId && isNewChat && !actualSessionIdRef.current) {
         actualSessionIdRef.current = res.sessionId;
 
-        // ✅ Fetch title and notify parent
+        // ✅ Fetch title and notify parent to update URL
         if (!titleFetchedRef.current) {
           titleFetchedRef.current = true;
           const titleRes = await fetchSessionTitle(user.username, res.sessionId);
@@ -236,7 +252,7 @@ export default function ChatLayout({
     }
   };
 
-  // ✅ REGENERATE
+  /* ===== REGENERATE ===== */
   const regenerateAtIndex = async (aiIndex: number, question: string) => {
     setMessages((prev) => {
       const updated = [...prev];
@@ -255,7 +271,7 @@ export default function ChatLayout({
     try {
       const sessionToSend = actualSessionIdRef.current || sessionId;
 
-      const res = await askQuestion({
+      const res: AskResponse = await askQuestion({
         question,
         sessionId: sessionToSend,
         username: user.username,
@@ -294,11 +310,6 @@ export default function ChatLayout({
     }
   };
 
-  // ✅ HANDLE SUGGESTED QUESTION CLICK
-  const handleSuggestedClick = async (text: string, files: File[] = []) => {
-    await sendMessage(text, files);
-  };
-
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto bg-slate-50">
       {/* LOADING STATE */}
@@ -316,8 +327,8 @@ export default function ChatLayout({
         </div>
       )}
 
-      {/* NORMAL CHAT VIEW */}
-      {!loading && messages.length > 0 && (
+      {/* NORMAL CHAT VIEW - Show messages regardless of isNewChat if we have them */}
+      {messages.length > 0 && (
         <>
           <MessageList
             messages={messages}

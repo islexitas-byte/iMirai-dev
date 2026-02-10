@@ -6,7 +6,7 @@ export type AskResponse = {
   preview_html?: string;
   suggested_next?: string[];
   usage: Record<string, string>;
-  sessionId: string; // ✅ NOW REQUIRED FROM BACKEND
+  sessionId: string; // ✅ Backend must return this
 };
 
 const { BACKEND_BASE_URL } = API_CONFIG;
@@ -39,7 +39,6 @@ export async function askQuestion({
 }: AskRequest): Promise<AskResponse> {
   const form = new FormData();
   const role = user?.role ?? "viewer";
-
   form.append("question", question);
   form.append("username", username);
 
@@ -101,9 +100,7 @@ export type UserUsageResponse = {
   credits_left: number;
 };
 
-export async function getUserUsage(
-  username: string
-): Promise<UserUsageResponse> {
+export async function getUserUsage(username: string): Promise<UserUsageResponse> {
   const res = await fetch(
     `${BACKEND_BASE_URL}/credits/usage?username=${encodeURIComponent(username)}`,
     {

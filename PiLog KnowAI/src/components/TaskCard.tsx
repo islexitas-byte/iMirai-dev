@@ -11,9 +11,17 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
-  Check
+  Check,
+  Maximize2
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { 
+  ResponsiveContainer, 
+  BarChart, Bar, 
+  LineChart, Line, 
+  AreaChart, Area, 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend 
+} from 'recharts';
 import { API_CONFIG } from "../config/api";
 import type { Task, OverallTaskStatus } from "../types/task";
 

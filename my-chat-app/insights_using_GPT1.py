@@ -56,102 +56,169 @@ def question_sql_genration(table_schema,status,data1):
     start = time.time()
     query = {}
     input_text = f"""
-        Your task is to analyze the given table schema from a data analyst’s perspective and generate insightful analytical questions.
+Your task is to analyze the given table schema from a data analyst’s perspective and generate insightful analytical questions.
 
-        Instructions:
-        - Carefully examine the table schema and identify important columns, metrics, and dimensions.
-        - Ask questions that a data analyst would typically ask to understand the data, uncover insights, and support decision-making.
-        - You must generate a maximum of 15 questions (this is a strict rule).
-        - Each question must be mapped to one or more of the following categories only:
-        - Summary
-        - Key Findings
-        - Trends
-        - Reasons & Insights
-        - Recommendations
-        - A question may belong to multiple categories if applicable.
-        - For each question, suggest one or more suitable chart types based on common React + JavaScript charting libraries.
-        - Chart suggestions must be ordered from most suitable to least suitable.
+Instructions:
+- Carefully examine the table schema and identify important columns, metrics, dimensions, and date/time fields.
+- Ask questions that a data analyst would typically ask to understand the data, uncover insights, and support decision-making.
+- Questions may include summaries, comparisons, trends, key findings, diagnostic insights, and recommendations.
+- You must generate a maximum of 15 questions (this is a strict rule).
+- Each question must be mapped to one or more of the following categories only:
+  - Summary
+  - Key Findings
+  - Trends
+  - Reasons & Insights
+  - Recommendations
+- A question may belong to multiple categories if applicable.
 
-        Allowed chart types only:
-        - bar
-        - line
-        - area
-        - pie
-        - stacked_bar
-        - table
+Chart & Axis Rules (STRICT):
+- For each question, suggest one or more suitable chart types based on common React + JavaScript charting libraries.
+- Chart suggestions must be ordered from most suitable to least suitable.
+- For each question, you MUST provide explicit axis bindings for the primary chart (the first chart suggestion).
+- Axis bindings must reference actual column names from the table schema.
+- Do NOT invent columns that are not present in the schema.
+- The X-axis must be a categorical or date/time column.
+- The Y-axis must be a numeric column and MUST include an aggregation method.
+- Axis labels must be human-readable and meaningful (not raw column names).
 
-        Output Format Rules (strict):
-        - The output must be valid JSON only.
-        - Do not include markdown, comments, or additional text.
-        - The JSON structure must follow this exact schema:
+Allowed chart types only:
+- bar
+- line
+- area
+- pie
+- stacked_bar
+- table
 
-        {{
-        "questions": [
-            {{
-            "question": "<question text>",
-            "categories": ["<Category1>", "<Category2>"],
-            "chart_suggestions": ["<chart_type1>", "<chart_type2>"]
-            }}
-        ]
+Allowed aggregation values only:
+- sum
+- avg
+- count
+- min
+- max
+
+Allowed time granularities only (use only if applicable):
+- year
+- quarter
+- month
+- day
+
+Output Format Rules (STRICT):
+- The output must be valid JSON only.
+- Do not include markdown, comments, explanations, numbering, or any extra text.
+- The JSON structure must follow this exact schema:
+
+{{
+  "questions": [
+    {{
+      "question": "<analytical question>",
+      "categories": ["<Category1>", "<Category2>"],
+      "chart_suggestions": ["<chart_type1>", "<chart_type2>"],
+      "chart_metadata": {{
+        "xAxis": {{
+          "column": "<column_name_from_schema>",
+          "granularity": "<year|quarter|month|day>",
+          "label": "<human-readable x-axis label>"
+        }},
+        "yAxis": {{
+          "column": "<numeric_column_name_from_schema>",
+          "aggregation": "<sum|avg|count|min|max>",
+          "label": "<human-readable y-axis label>"
         }}
+      }}
+    }}
+  ]
+}}
 
-        Table Schema:
-        {table_schema}
+Table Schema:
+{table_schema}
 
     """
     if status==True:
         input_text1 = f"""
-        Your task is to analyze the given table schema and sample data from a data analyst’s perspective and generate insightful, time-based analytical questions.
+Your task is to analyze the given table schema and sample data from a data analyst’s perspective and generate insightful, time-based analytical questions.
 
-        Instructions:
-        - Carefully examine the table schema and the provided data (enclosed in backticks).
-        - Identify all date/time-related columns and understand the available time range (years, months, periods) from the data.
-        - Generate questions that focus specifically on time-based analysis, such as:
-        - Trends over time
-        - Year-over-year or month-over-month comparisons
-        - Seasonality and recurring patterns
-        - Growth or decline across periods
-        - If the data indicates specific available years or periods, restrict questions to only those time ranges.
-        - You must generate a maximum of 15 questions (this is a strict rule).
-        - Each question must be mapped to one or more of the following categories only:
-        - Summary
-        - Key Findings
-        - Trends
-        - Reasons & Insights
-        - Recommendations
-        - A question may belong to multiple categories if applicable.
-        - For each question, suggest one or more suitable chart types based on common React + JavaScript charting libraries.
-        - Chart suggestions must be ordered from most suitable to least suitable.
+Instructions:
+- Carefully examine the table schema and the provided data (enclosed in backticks).
+- Identify all date/time-related columns and numeric metrics.
+- Determine the available time range (years, months, periods) strictly from the provided data.
+- Generate questions that focus specifically on time-based analysis, including:
+  - Trends over time
+  - Year-over-year or month-over-month comparisons
+  - Seasonality and recurring patterns
+  - Growth or decline across periods
+- If the data indicates specific available years or periods, restrict questions to only those ranges.
+- You must generate a maximum of 15 questions (this is a strict rule).
+- Each question must be mapped to one or more of the following categories only:
+  - Summary
+  - Key Findings
+  - Trends
+  - Reasons & Insights
+  - Recommendations
+- A question may belong to multiple categories if applicable.
 
-        Allowed chart types only:
-        - bar
-        - line
-        - area
-        - pie
-        - stacked_bar
-        - table
+Chart & Axis Rules (STRICT):
+- For each question, suggest one or more suitable chart types based on common React + JavaScript charting libraries.
+- Chart suggestions must be ordered from most suitable to least suitable.
+- For each question, you MUST provide explicit axis bindings for the primary chart (first chart suggestion).
+- Axis bindings must reference actual column names from the table schema.
+- Do NOT invent columns that are not present in the schema.
+- The X-axis must typically be a date/time or categorical column.
+- The Y-axis must be a numeric column and MUST include an aggregation method.
+- Axis labels must be human-readable and meaningful (not raw column names).
 
-        Output Format Rules (strict):
-        - The output must be valid JSON only.
-        - Do not include markdown, comments, explanations, numbering, or any extra text.
-        - The JSON structure must follow this exact schema:
+Allowed chart types only:
+- bar
+- line
+- area
+- pie
+- stacked_bar
+- table
 
-        {{
-        "questions": [
-            {{
-            "question": "<time-based analytical question>",
-            "categories": ["<Category1>", "<Category2>"],
-            "chart_suggestions": ["<chart_type1>", "<chart_type2>"]
-            }}
-        ]
+Allowed aggregation values only:
+- sum
+- avg
+- count
+- min
+- max
+
+Allowed time granularities only:
+- year
+- quarter
+- month
+- day
+
+Output Format Rules (STRICT):
+- The output must be valid JSON only.
+- Do not include markdown, comments, explanations, numbering, or any extra text.
+- The JSON structure must follow this exact schema:
+
+{{
+  "questions": [
+    {{
+      "question": "<time-based analytical question>",
+      "categories": ["<Category1>", "<Category2>"],
+      "chart_suggestions": ["<chart_type1>", "<chart_type2>"],
+      "chart_metadata": {{
+        "xAxis": {{
+          "column": "<column_name_from_schema>",
+          "granularity": "<year|quarter|month|day>",
+          "label": "<human-readable x-axis label>"
+        }},
+        "yAxis": {{
+          "column": "<numeric_column_name_from_schema>",
+          "aggregation": "<sum|avg|count|min|max>",
+          "label": "<human-readable y-axis label>"
         }}
+      }}
+    }}
+  ]
+}}
 
-        Table Schema:
-        `{table_schema}`
+Table Schema:
+`{table_schema}`
 
-        Data:
-        `{data1}`
-
+Data:
+`{data1}`
         """
     res = client.chat.completions.create(
         model="gpt-oss-120b",
@@ -210,13 +277,13 @@ def run_inference(question, table_meta_data):
     return generated_query
 
 def sql_query_genration(table_schema,data1,status):
-    query = {}
+    query = []
     ques1 = question_sql_genration(table_schema,status,data1)
-    for i in tqdm(ques1,total=len(ques1)):
-        # res = query_genration(table,i)
-        res = run_inference(i,table_schema)
-        # res = re.sub('[\"]','',res)
-        query.update({i:res})
+    for i in tqdm(ques1['questions'],total=len(ques1['questions'])):
+        # print(i)
+        res = run_inference(i['question'],table_schema)
+        i['query'] = res
+        query.append(i)
     return query
 
 def split_text(text, max_len=4096):
@@ -409,7 +476,7 @@ def load_data(data_table,table_name,user_name,content_id):
     conn.close()
 
     new_res = {}
-    db = SQLDatabase.from_uri(f'oracle+cx_oracle://{USER_NAME}:{PASSWORD}@{HOST}:{PORT}/?service_name={SERVICE_NAME}',include_tables=[table_name.lower()])
+    db = SQLDatabase.from_uri(f'oracle+oracledb://{USER_NAME}:{PASSWORD}@{HOST}:{PORT}/?service_name={SERVICE_NAME}',include_tables=[table_name.lower()])
     schema_ = re.sub(r'(\n|\t)','',db.table_info.split('/*')[0])
 
     conn = get_connection()
@@ -428,20 +495,24 @@ def load_data(data_table,table_name,user_name,content_id):
         data1 = {i:list(time_sheet[i].unique()) for i in ['YEAR','Quarter']}
     sql_q = sql_query_genration(schema_,data1,Status)
     # print(sql_q)
-    for i,j in sql_q.items():
+    charts_data = []
+    for j in sql_q['questions']:
         
         try:
-            data = pd.read_sql(j,conn)
+            data = pd.read_sql(j['query'],conn)
             data.dropna(axis=1,how='all',inplace=True)
             if len(data)==0:
                 print(data.shape)
             if (data.shape[0]>0)and(data.shape[0]<200):
-                new_res.update({i:({k:(list(data[k])) for k in data.columns},data.shape[0])})
+                data = {k:(list(data[k])) for k in data.columns}
+                new_res.update({j['question']:(data,data.shape[0])})
+                j['data'] = data
+                charts_data.append(j)
         except Exception as e:
             # print(i,e)
             pass
-    cur.execute("UPDATE USERS_TASKS_LIST SET DATA_ANALYSED=:0 WHERE TASK_ID=:1",
-    ('Completed',content_id))
+    cur.execute("UPDATE USERS_TASKS_LIST SET DATA_ANALYSED=:0,CHARTS_DATA=:1 WHERE TASK_ID=:2",
+    ('Completed',str(charts_data),content_id))
     conn.commit()
     cur.close()
     conn.close()

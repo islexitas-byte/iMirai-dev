@@ -7,7 +7,7 @@ warnings.filterwarnings('ignore')
 
 client = OpenAI(
     api_key='YOUR_API_KEY',
-    base_url = "http://207.180.148.74:45086/v1"
+    base_url = "http://207.180.148.74:47112/v1"
 )
 model_ISL0 = client.models.list().data[1].id
 # model_ISL1 = client.models.list().data[2].id

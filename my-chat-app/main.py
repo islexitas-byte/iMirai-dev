@@ -11,6 +11,7 @@ from tasks import run_task
 from training_data_code import run_training
 from project_plans_save import save_project_plans
 import pandas as pd
+import uuid
 import json
 import tiktoken
 import warnings
@@ -27,7 +28,7 @@ TOKENS_PER_CREDIT = 20000
 warnings.filterwarnings('ignore')
 client = OpenAI(
     api_key='YOUR_API_KEY',
-    base_url = "http://207.180.148.74:46530/v1"
+    base_url = "http://207.180.148.74:46953/v1"
 )
 model_ISL0 = 'gpt-oss-120b'
 app = FastAPI()
@@ -212,7 +213,7 @@ def get_response(model_name,msg,files_message,chat_history,role,sampledata=None)
     try:
         # with httpx.AsyncClient(timeout=90.0) as client:
         resp = requests.post(
-            "http://207.180.148.74:45074/test-new-RAG",
+            "http://207.180.148.74:47196/test-new-RAG",
             data={"question": msg},
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -1002,7 +1003,18 @@ def rename_task(taskId: str,newName:str):
     conn.commit()
     cur.close()
     conn.close()
-
+@app.post('/task/charts')
+def rename_task(taskId: str,sectionName:str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT CHARTS_DATA FROM USERS_TASKS_LIST WHERE TASK_ID=:taskid",taskid=taskId)
+    res = cur.fetchone()
+    res = eval(res[0].read())
+    res = [{i:j[0] if i=='categories' else j for i,j in k.items()} for k in res]
+    res = [i for i in res if sectionName.lower()==i['categories'].lower()]
+    cur.close()
+    conn.close()
+    return res
 @app.post("/ask")
 async def ask(
     question: str = Form(...),
@@ -1013,7 +1025,7 @@ async def ask(
 ):
     
     question = question.strip()
-    session_id = sessionId
+    session_id = str(uuid.uuid4())
     user_name = username
     normalization = normalize_question(question, model_ISL0)
 
